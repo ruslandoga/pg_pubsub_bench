@@ -9,10 +9,14 @@ iex(p@10.0.102.150)1> P.connect_nodes()
 
 #### Registration
 
+Using `Phoenix.PubSub` we don't need to wait other nodes acking out subscription:
+
 ```elixir
 iex(p@10.0.102.150)2> :timer.tc fn -> Enum.each(1..10_000, fn i -> Phoenix.PubSub.subscribe(P.PubSub, "topic:#{i}") end) end
 {93478, :ok}
 ```
+
+With `:pg` joining the group is not over until we get it fully replicated locally:
 
 ```elixir
 iex(p@10.0.102.150)3> :timer.tc fn ->
@@ -22,7 +26,9 @@ iex(p@10.0.102.150)3> :timer.tc fn ->
 {1410878, :ok}
 ```
 
-### Broadcasting
+#### Broadcasting
+
+`Phoenix.PubSub` doesn't send duplicate messages when broadcasting to multiple subscribers on another node:
 
 ```elixir
 iex(p@10.0.102.150)4> Enum.each(1..10_000, fn i -> Phoenix.PubSub.unsubscribe(P.PubSub, "topic:#{i}") end)
@@ -34,6 +40,8 @@ iex(p@10.0.102.150)5> :erpc.call(:"p@10.0.103.156", fn -> Enum.each(1..10_000, f
 iex(p@10.0.102.150)6> :timer.tc fn -> Phoenix.PubSub.broadcast(P.PubSub, "topic", :hello) end
 {24, :ok}
 ```
+
+Using `:pg` we need to send message to each member of the group:
 
 ```elixir
 iex(p@10.0.102.150)7> :erpc.call(:"p@10.0.103.156", fn -> Enum.each(1..10_000, fn _ -> P.Dummy.join(:group) end) end)
