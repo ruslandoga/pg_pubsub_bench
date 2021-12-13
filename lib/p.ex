@@ -42,8 +42,15 @@ defmodule P do
     |> Enum.map(fn ip -> {ip, Node.connect(:"p@#{:inet.ntoa(ip)}")} end)
   end
 
+  def peer do
+    hd(Node.list())
+  end
+
   def wait_for_pg_members_count_to_be(count) do
-    if :pg.get_members(:group) >= count do
+    actual_count = length(:pg.get_members(:group))
+    IO.inspect(actual_count)
+
+    if actual_count >= count do
       :ok
     else
       :timer.sleep(100)

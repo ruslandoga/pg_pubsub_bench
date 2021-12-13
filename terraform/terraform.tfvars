@@ -1,1 +1,1 @@
-docker_image = "ruslandoga/pg_pubsub_bench:8"
+docker_image = "ruslandoga/pg_pubsub_bench:9"
